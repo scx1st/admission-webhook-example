@@ -1,0 +1,30 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: validation-webhook-example-cfg
+  labels:
+    app: admission-webhook-example
+  annotations:
+    cert-manager.io/inject-ca-from: default/admission-example-tls-secret
+webhooks:
+  - name: required-labels.qikqiak.com
+    admissionReviewVersions:
+      - v1
+    clientConfig:
+      caBundle: "" # "<Kubernetes CA> or <cert-manager CA>"
+      service:
+        name: admission-webhook-example-svc
+        namespace: default
+        port: 443
+        path: /validate
+    rules:
+      - operations: ["CREATE"]
+        apiGroups: ["apps", ""]
+        apiVersions: ["v1"]
+        resources: ["deployments", "services"]
+    namespaceSelector:
+      matchLabels:
+        admission-webhook-example: enabled
+    failurePolicy: Fail
+    matchPolicy: Exact
+    sideEffects: None
